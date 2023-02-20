@@ -1,24 +1,58 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
-function App() {
+import { getUsers } from './redux/toolkitSlice.js';
+import { users } from './services/service';
+import GlobalStyles from './components/Global';
+import PopUpWindow from './components/PopUpWindow';
+import TableList from './components/TableList';
+
+import { Container } from './components/styles/containers/Container.styled';
+import {Button} from './components/styles/Button.styled';
+
+const App = () => {
+  const dispatch = useDispatch();
+
+  // The data array is placed in the store
+  useEffect(() => {
+    users().then(value => dispatch(getUsers(value.data)));
+  }, [])
+
+  // Get values from store
+  const usersList = useSelector(state => state.toolkit.users);
+  const selectedColumns = useSelector(state => state.toolkit.selectedColumns);
+  const availableColumns = useSelector(state => state.toolkit.availableColumns);
+  
+  // Displaying a modal window on click
+  const [showModal, setShowModal] = useState(false);
+
+  const handleShow = () => {
+    document.getElementById('box').style.opacity = '0.9';
+    setShowModal(true);
+  }
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      <GlobalStyles />
+      <Container id='box'>
+        <Button onClick={handleShow}>select columns</Button>
+        {
+          usersList.length > 0 && 
+          <TableList 
+            selectedColumns={selectedColumns} 
+            usersList={usersList}
+          />
+        } 
+      </Container>
+      { 
+        showModal && 
+        <PopUpWindow 
+          setShowModal={setShowModal} 
+          selectedColumns={selectedColumns} 
+          availableColumns={availableColumns} 
+        /> 
+      } 
+    </>
   );
 }
 
